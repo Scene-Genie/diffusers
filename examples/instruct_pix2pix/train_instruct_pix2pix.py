@@ -141,7 +141,7 @@ def parse_args():
     parser.add_argument(
         "--num_validation_images",
         type=int,
-        default=4,
+        default=1,
         help="Number of images that should be generated during validation with `validation_prompt`.",
     )
     parser.add_argument(
@@ -941,19 +941,25 @@ def main():
                 pipeline.set_progress_bar_config(disable=True)
 
                 # run inference
-                original_image = download_image(args.val_image_url)
+                image_urls = args.val_image_url.split(",")
+                original_images = []
+
+                for url in image_urls:
+                    original_image = download_image(url)
+                    original_images.append(original_image)
+
                 edited_images = []
                 with torch.autocast(
                     str(accelerator.device).replace(":0", ""), enabled=accelerator.mixed_precision == "fp16"
                 ):
-                    for _ in range(args.num_validation_images):
+                    for original_image in original_images:
                         edited_images.append(
                             pipeline(
                                 args.validation_prompt,
                                 image=original_image,
                                 num_inference_steps=20,
                                 image_guidance_scale=1.5,
-                                guidance_scale=7,
+                                guidance_scale=0,
                                 generator=generator,
                             ).images[0]
                         )
@@ -961,11 +967,11 @@ def main():
                 for tracker in accelerator.trackers:
                     if tracker.name == "wandb":
                         wandb_table = wandb.Table(columns=WANDB_TABLE_COL_NAMES)
-                        for edited_image in edited_images:
+                        for original_image, edited_image in zip(original_images, edited_images):
                             wandb_table.add_data(
                                 wandb.Image(original_image), wandb.Image(edited_image), args.validation_prompt
                             )
-                        tracker.log({"validation": wandb_table})
+                        tracker.log({f"validation_{epoch}": wandb_table})
                 if args.use_ema:
                     # Switch back to the original UNet parameters.
                     ema_unet.restore(unet.parameters())
@@ -1009,7 +1015,7 @@ def main():
                             image=original_image,
                             num_inference_steps=20,
                             image_guidance_scale=1.5,
-                            guidance_scale=7,
+                            guidance_scale=0,
                             generator=generator,
                         ).images[0]
                     )
