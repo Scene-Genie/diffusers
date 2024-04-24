@@ -16,8 +16,8 @@ accelerate launch --mixed_precision="fp16" train_instruct_pix2pix.py \
   --train_batch_size=4 \
   --gradient_accumulation_steps=4 \
   --gradient_checkpointing \
-  --max_train_steps=1500 \
-  --checkpointing_steps=1500 \
+  --max_train_steps=15000 \
+  --checkpointing_steps=5000 \
   --checkpoints_total_limit=1 \
   --learning_rate=5e-05 \
   --max_grad_norm=1 \

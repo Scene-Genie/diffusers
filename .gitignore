@@ -176,3 +176,8 @@ tags
 
 # wandb
 wandb
+
+# extra
+examples/instruct_pix2pix/p2p-scenegenie-filtered/
+examples/instruct_pix2pix/scenegenie-shadow-add/
+examples/instruct_pix2pix/scenegenie-shadow-add-v2/

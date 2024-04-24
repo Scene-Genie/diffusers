@@ -1193,6 +1193,8 @@ def main():
                         revision=args.revision,
                         variant=args.variant,
                         torch_dtype=weight_dtype,
+                        safety_checker = None,
+                        requires_safety_checker = False
                     )
 
                     log_validation(
